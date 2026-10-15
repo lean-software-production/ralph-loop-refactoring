@@ -1,0 +1,17 @@
+{
+  "name": "ralph-loop-refactoring",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A small Ralph-loop tutorial for safe, evidence-checked refactoring.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.2.0 <25",
+    "npm": ">=11"
+  },
+  "workspaces": ["calculator"],
+  "scripts": {
+    "test": "npm test --workspace calculator",
+    "quality": "node calculator/scripts/quality.mjs",
+    "test:harness": "node --test test/harness.test.mjs"
+  }
+}

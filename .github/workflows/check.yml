@@ -17,6 +17,6 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: bash -n ralph.sh factory/*.sh
+      - run: node --check factory/run.mjs
       - run: npm test
       - run: npm run test:harness

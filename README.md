@@ -1,10 +1,10 @@
 # Ralph loop: refactoring
 
-A small companion to [ralph-loop-demo](https://github.com/lean-software-production/ralph-loop-demo): one agent refactors a calculator, a separate agent checks the evidence, and a bounded loop feeds failures back. This is a standalone, script-reading tutorial—not the full software-factory course or a browser tutor.
+A small companion to [ralph-loop-demo](https://github.com/lean-software-production/ralph-loop-demo): a navigator plans a calculator refactoring, a driver makes the change, and tests and ESLint provide feedback. A short JavaScript loop repeats until the result is good enough or the attempt limit is reached.
 
 ## Setup
 
-Use Node.js 24, npm 11, Git, and globally installed [Pi](https://github.com/earendil-works/pi). The Dev Container uses Node 24 and only the Pi feature; authenticate after opening it.
+Use Node.js 24, npm 11, Git, and globally installed [Pi](https://github.com/earendil-works/pi). The Dev Container includes Node 24 and the Pi feature.
 
 ```sh
 # Skip this if Pi is already installed.
@@ -17,56 +17,56 @@ Inside Pi, use `/login`, then `/model` to select a model. Exit Pi, then run thes
 ```sh
 npm install
 npm test
-npm run quality
 npm run test:harness
 ```
 
-The root package is a private npm workspace containing `calculator/`; install dependencies at the root. `npm test` runs the calculator tests. Quality findings are expected initially, so `npm run quality` should exit nonzero. Harness tests use deterministic mocked agents and make no paid calls. Actual Pi model calls cost tokens.
+The root package is a private npm workspace containing `calculator/`. The calculator is deliberately cramped but has passing tests. Harness tests mock the agents and checks; they make no paid calls. Actual model calls cost tokens.
 
-## The pieces
+## The workflow
 
-| File | Role |
-| --- | --- |
-| `calculator/` | Behaviour-tested, deliberately cramped refactoring exercise |
-| `factory/refactor.md` | Doer instructions: one focused, behaviour-preserving refactor |
-| `factory/refactor-do.sh` | Records the baseline, then invokes the doer; `--retry` adds findings |
-| `factory/refactor-validate.md` | Validator instructions: judge the supplied evidence |
-| `factory/refactor-validate.sh` | Collects evidence, invokes the validator, checks its verdict |
-| `ralph.sh` | Repeats doer → validator up to a fixed attempt limit |
+Read [`factory/run.mjs`](factory/run.mjs). Its main loop is:
 
-## Run it manually
+```js
+while (true) {
+  const result = check();
 
-Start with a clean calculator Git state, including no untracked calculator files.
+  if (goodEnough(result)) break;
+  if (attempts >= maxAttempts) break;
 
-```sh
-./factory/refactor-do.sh
-./factory/refactor-validate.sh
-# Only after VERDICT: FAIL:
-./factory/refactor-do.sh --retry
-./factory/refactor-validate.sh
+  const instructions = planNextMove(result);
+  implement(instructions);
+  attempts++;
+}
 ```
 
-A fresh doer records `factory/.tmp/refactor-quality-before.txt`. A retry requires that baseline and previous findings; it appends the findings to the prompt without replacing the baseline. Each invocation starts a fresh Pi context with `--no-session`.
+- `check()` runs the calculator tests and ESLint.
+- `goodEnough(result)` requires both commands to exit successfully.
+- `planNextMove(result)` asks the read-only navigator for instructions in plain English.
+- `implement(instructions)` asks the driver to make the change.
 
-Validation gathers the calculator's `git diff HEAD`, untracked-file list, test output, and quality output under `factory/.tmp/`. Its answer is saved to `factory/.tmp/refactor-validate-findings.txt`; the first nonempty line must be exactly `VERDICT: PASS` or `VERDICT: FAIL`. Validator exit codes are **0** for PASS, **1** for FAIL, and **2** for tool errors, malformed output, or contradictions. A PASS with failing tests is rejected.
+The navigator and driver prompts are [`factory/navigator.md`](factory/navigator.md) and [`factory/driver.md`](factory/driver.md). Each turn starts a fresh Pi context with `--no-session`. The navigator sees the latest check output and can read the current source. There is no validator agent, fixed target, baseline comparison, structured response protocol, or resume state.
 
-## Run the bounded loop
+ESLint checks complexity, function size, duplication, and other configured rules. All findings must be cleared for this exercise to finish successfully, so several small refactorings may be needed. The broader `npm run quality` command also runs Knip; Knip is not part of this loop.
+
+## Run it
+
+Use an isolated checkout or worktree and review any existing edits first:
 
 ```sh
-./ralph.sh       # at most 5 doer/validator attempts
-./ralph.sh 3     # choose another positive limit
+node factory/run.mjs       # at most 5 navigator/driver attempts
+node factory/run.mjs 10    # choose another positive limit
 ```
 
-The loop starts fresh, retries only on FAIL while preserving the original baseline, and stops at the first PASS. It exits **0** on PASS, **1** on exhaustion, or **2** on error.
+The program checks before the first edit and after every edit, including the last allowed attempt. It exits **0** when tests and ESLint pass, **1** when attempts run out, or **2** on an invocation error. Output goes to the terminal; results stay in memory and no report files are written.
 
-There are no automatic commits or rollbacks. Failed or exhausted changes remain for review. After success, inspect the diff and commit the accepted refactor manually before starting another fresh loop.
+The navigator gets read-only tools. The driver can edit files. Neither gets a shell tool. Source-only editing and preserving tests, configuration, and behaviour are prompt instructions, not protections enforced by JavaScript or an OS sandbox.
 
-The doer gets `read,edit,write,grep,find,ls`; the validator gets only `read,grep,find,ls`. Neither gets `bash`. The harness—not the validator—runs tests and quality checks. These tool allowlists are not an OS/filesystem sandbox; review changes and use an isolated environment as appropriate.
+Nothing is committed or rolled back. Inspect the diff yourself, including tests and configuration, before accepting a result. Passing checks are evidence, not proof of unchanged behaviour or good design.
 
 Continue with the short [tutorial](docs/tutorial.md).
 
 ## Sources and attribution
 
-Extracted from [software-factory-tutorial](https://github.com/lean-software-production/software-factory-tutorial), particularly lessons [002](https://github.com/lean-software-production/software-factory-tutorial/blob/main/tutorial/docs/specs/002-build-a-doer.md), [003](https://github.com/lean-software-production/software-factory-tutorial/blob/main/tutorial/docs/specs/003-build-a-validator.md), and [004](https://github.com/lean-software-production/software-factory-tutorial/blob/main/tutorial/docs/specs/004-feed-the-findings-back.md). This version moves evidence collection into the harness and makes retries preserve the baseline.
+Extracted from [software-factory-tutorial](https://github.com/lean-software-production/software-factory-tutorial), particularly lessons [002](https://github.com/lean-software-production/software-factory-tutorial/blob/main/tutorial/docs/specs/002-build-a-doer.md), [003](https://github.com/lean-software-production/software-factory-tutorial/blob/main/tutorial/docs/specs/003-build-a-validator.md), and [004](https://github.com/lean-software-production/software-factory-tutorial/blob/main/tutorial/docs/specs/004-feed-the-findings-back.md). This version uses navigator/driver agents and deterministic checks in a small JavaScript loop.
 
 The calculator is copied byte-for-byte with its existing CC BY-SA notices. See its [README](calculator/README.md), [attribution](calculator/ATTRIBUTION.md), and [licence](calculator/LICENSE.md), including credit to [Chelsea Troy's original exercise](https://github.com/chelseatroy/python-exercises/tree/main/s9_code_quality_exercise). Those notices describe the calculator, not a blanket licence for this repository.

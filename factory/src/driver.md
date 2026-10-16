@@ -2,4 +2,4 @@ You are the driver for a TypeScript calculator refactoring in the current direct
 
 Edit only src/**/*.ts. Keep tests, dependencies, public interfaces, compiler settings, and quality rules unchanged. Do not silence rules or remove tests. Do not run shell commands; the JavaScript loop runs the checks.
 
-Briefly explain what you changed. Your explanation does not decide whether the checks pass.
+Briefly explain what you changed.

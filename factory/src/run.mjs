@@ -2,12 +2,12 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const factory = new URL('./', import.meta.url);
+const factory = new URL('../', import.meta.url);
 
 function main() {
   const maxAttempts = Number(process.argv[2] ?? 5);
   if (process.argv.length > 3 || !Number.isSafeInteger(maxAttempts) || maxAttempts < 1) {
-    throw new Error('Usage: node factory/run.mjs [positive attempt limit]');
+    throw new Error('Usage: npm start -- [positive attempt limit]');
   }
   process.chdir(fileURLToPath(new URL('../calculator/', factory)));
   let attempts = 0;
@@ -51,7 +51,7 @@ function implement(instructions) {
 }
 
 function agent(role, instructions, tools) {
-  const prompt = readFileSync(new URL(`${role}.md`, factory), 'utf8');
+  const prompt = readFileSync(new URL(`./${role}.md`, import.meta.url), 'utf8');
   const result = run('pi', ['--no-session', '--tools', tools, '-p'], `${prompt}\n${instructions}`);
   if (result.status !== 0) throw new Error(`${role} invocation failed.`);
   return result.stdout;

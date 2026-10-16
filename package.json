@@ -8,10 +8,11 @@
     "node": ">=24.2.0 <25",
     "npm": ">=11"
   },
-  "workspaces": ["calculator"],
+  "workspaces": ["calculator", "factory"],
   "scripts": {
-    "test": "npm test --workspace calculator",
+    "start": "npm start --workspace factory --",
+    "test": "npm test --workspaces",
     "quality": "node calculator/scripts/quality.mjs",
-    "test:harness": "node --test test/harness.test.mjs"
+    "test:harness": "npm test --workspace factory"
   }
 }

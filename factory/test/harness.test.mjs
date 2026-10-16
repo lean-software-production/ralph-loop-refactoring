@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
-const project = fileURLToPath(new URL('../', import.meta.url));
+const project = fileURLToPath(new URL('../../', import.meta.url));
 const fakeCommand = `#!${process.execPath}
 const fs = require('node:fs');
 const path = require('node:path');
@@ -56,7 +56,7 @@ function fixture(t, env = {}) {
     mkdirSync(dirname(join(repo, file)), { recursive: true });
     writeFileSync(join(repo, file), text);
   };
-  for (const file of ['factory/run.mjs', 'factory/navigator.md', 'factory/driver.md']) {
+  for (const file of ['factory/src/run.mjs', 'factory/src/navigator.md', 'factory/src/driver.md']) {
     mkdirSync(dirname(join(repo, file)), { recursive: true });
     copyFileSync(join(project, file), join(repo, file));
   }
@@ -69,7 +69,7 @@ function fixture(t, env = {}) {
   return {
     repo, put,
     run(args = []) {
-      return spawnSync(process.execPath, [join(repo, 'factory/run.mjs'), ...args], { cwd: root, env: environment, encoding: 'utf8', timeout: 10000 });
+      return spawnSync(process.execPath, [join(repo, 'factory/src/run.mjs'), ...args], { cwd: root, env: environment, encoding: 'utf8', timeout: 10000 });
     },
     read(file) { return readFileSync(join(repo, file), 'utf8'); },
     calls(role) {

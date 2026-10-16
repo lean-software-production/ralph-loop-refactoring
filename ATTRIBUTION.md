@@ -8,7 +8,7 @@ commit `2d0194bf9be3707edc60a987da9fa6b64c0bc1bf`:
 - Lessons 001–004 and `tutorial/docs/seeds/part-2/` — adapted into this shorter, standalone tutorial.
 
 This version omits the browser tutor and the later factory-operation lessons. A read-only
-navigator plans refactorings and a driver edits the source. The short loop in `factory/run.mjs`
+navigator plans refactorings and a driver edits the source. The short loop in `factory/src/run.mjs`
 runs tests and ESLint, repeating until both pass or the attempt limit is reached. There is no
 validator agent and nothing is automatically committed.
 

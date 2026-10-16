@@ -17,14 +17,13 @@ Inside Pi, use `/login`, then `/model` to select a model. Exit Pi, then run thes
 ```sh
 npm install
 npm test
-npm run test:harness
 ```
 
-The root package is a private npm workspace containing `calculator/`. The calculator is deliberately cramped but has passing tests. Harness tests mock the agents and checks; they make no paid calls. Actual model calls cost tokens.
+The private root package contains two npm workspaces: `calculator/` and `factory/`. The calculator is deliberately cramped but has passing tests. The factory keeps its loop and prompts in `src/` and its harness tests in `test/`. `npm test` runs both packages' tests; `npm run test:harness` runs only the factory tests. Harness tests mock the agents and checks; they make no paid calls. Actual model calls cost tokens.
 
 ## The workflow
 
-Read [`factory/run.mjs`](factory/run.mjs). Its main loop is:
+Read [`factory/src/run.mjs`](factory/src/run.mjs). Its main loop is:
 
 ```js
 while (true) {
@@ -44,7 +43,7 @@ while (true) {
 - `planNextMove(result)` asks the read-only navigator for instructions in plain English.
 - `implement(instructions)` asks the driver to make the change.
 
-The navigator and driver prompts are [`factory/navigator.md`](factory/navigator.md) and [`factory/driver.md`](factory/driver.md). Each turn starts a fresh Pi context with `--no-session`. The navigator sees the latest check output and can read the current source. There is no validator agent, fixed target, baseline comparison, structured response protocol, or resume state.
+The navigator and driver prompts are [`factory/src/navigator.md`](factory/src/navigator.md) and [`factory/src/driver.md`](factory/src/driver.md). Each turn starts a fresh Pi context with `--no-session`. The navigator sees the latest check output and can read the current source. There is no validator agent, fixed target, baseline comparison, structured response protocol, or resume state.
 
 ESLint checks complexity, function size, duplication, and other configured rules. All findings must be cleared for this exercise to finish successfully, so several small refactorings may be needed. The broader `npm run quality` command also runs Knip; Knip is not part of this loop.
 
@@ -53,8 +52,8 @@ ESLint checks complexity, function size, duplication, and other configured rules
 Use an isolated checkout or worktree and review any existing edits first:
 
 ```sh
-node factory/run.mjs       # at most 5 navigator/driver attempts
-node factory/run.mjs 10    # choose another positive limit
+npm start          # at most 5 navigator/driver attempts
+npm start -- 10    # choose another positive limit
 ```
 
 The program checks before the first edit and after every edit, including the last allowed attempt. It exits **0** when tests and ESLint pass, **1** when attempts run out, or **2** on an invocation error. Output goes to the terminal; results stay in memory and no report files are written.

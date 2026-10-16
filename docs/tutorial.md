@@ -1,6 +1,6 @@
 # A small refactoring loop
 
-Follow the [setup](../README.md#setup), then read [`factory/run.mjs`](../factory/run.mjs). The calculator starts with passing tests and deliberately awkward code. The aim is to refactor it until tests and ESLint both pass.
+Follow the [setup](../README.md#setup), then read [`factory/src/run.mjs`](../factory/src/run.mjs). The calculator starts with passing tests and deliberately awkward code. The aim is to refactor it until tests and ESLint both pass.
 
 ## 1. Check the current result
 
@@ -12,7 +12,7 @@ The separate `npm run quality` command also runs Knip for unused-code findings. 
 
 ## 2. Decide the next move
 
-Read [`factory/navigator.md`](../factory/navigator.md). `planNextMove(result)` gives that prompt and the latest check output to a fresh, read-only Pi invocation.
+Read [`factory/src/navigator.md`](../factory/src/navigator.md). `planNextMove(result)` gives that prompt and the latest check output to a fresh, read-only Pi invocation.
 
 The navigator reads the source and tests, then gives concrete instructions in plain English. It may choose a new small refactoring or repair a problem from the previous edit. It does not edit files, run commands, or decide when the loop stops.
 
@@ -20,7 +20,7 @@ There is no plan schema or target-selection protocol to learn: its response beco
 
 ## 3. Implement the instructions
 
-Read [`factory/driver.md`](../factory/driver.md). `implement(instructions)` asks a fresh Pi invocation to make the change.
+Read [`factory/src/driver.md`](../factory/src/driver.md). `implement(instructions)` asks a fresh Pi invocation to make the change.
 
 The driver can read and edit files but has no shell tool. Its prompt says to change only calculator source while preserving behaviour, tests, dependencies, and configuration. Those are instructions, not restrictions enforced by the program.
 
@@ -44,8 +44,8 @@ Each agent turn has a fresh context. The source files carry the edits, and the l
 Use an isolated checkout or worktree. Work from the repository root and choose one command:
 
 ```sh
-node factory/run.mjs       # up to 5 edits
-node factory/run.mjs 10    # up to 10 edits
+npm start          # up to 5 edits
+npm start -- 10    # up to 10 edits
 ```
 
 Each edit has one navigator turn and one driver turn. There is a check before the first edit and after every edit. Model calls cost tokens. The program exits **0** when checks pass, **1** when attempts run out, or **2** on an invocation error.
